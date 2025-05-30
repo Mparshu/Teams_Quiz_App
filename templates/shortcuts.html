@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Shortcuts - Microsoft Teams Quiz{% endblock %}
+
+{% block header %}Microsoft Teams Shortcuts{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="text-primary mb-2">
+                    <i class="fas fa-keyboard"></i> Keyboard Shortcuts Reference
+                </h3>
+                <p class="lead mb-0">Study these shortcuts before taking the quiz!</p>
+            </div>
+            <div class="text-end">
+                {% if session.user_name %}
+                <a href="{{ url_for('quiz') }}" class="btn btn-teams btn-lg">
+                    <i class="fas fa-play"></i> Take Quiz
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Search/Filter -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="shortcutSearch" class="form-control" placeholder="Search shortcuts...">
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    <i class="fas fa-info-circle"></i> Type to filter shortcuts by description or key combination
+                </small>
+            </div>
+        </div>
+
+        <!-- Shortcuts Grid -->
+        <div class="row g-3" id="shortcutsContainer">
+            {% for description, shortcut in shortcuts.items() %}
+            <div class="col-lg-6 shortcut-card" data-description="{{ description.lower() }}" data-shortcut="{{ shortcut.lower() }}">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-primary mb-2">{{ description }}</h6>
+                                <div class="shortcut-keys">
+                                    {% set keys = shortcut.split(' + ') %}
+                                    {% for key in keys %}
+                                        <span class="badge bg-secondary me-1 p-2 font-monospace">{{ key }}</span>
+                                        {% if not loop.last %}
+                                        <span class="text-muted">+</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <i class="fas fa-keyboard text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="text-center py-5" style="display: none;">
+            <i class="fas fa-search text-muted" style="font-size: 3rem;"></i>
+            <h4 class="text-muted mt-3">No shortcuts found</h4>
+            <p class="text-muted">Try adjusting your search terms</p>
+        </div>
+
+        <!-- Study Tips -->
+        <div class="card border-0 shadow-sm mt-5">
+            <div class="card-header bg-light border-0">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb text-warning"></i> Study Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-repeat text-primary" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Practice Regularly</h6>
+                            <small class="text-muted">Use shortcuts daily to build muscle memory</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-star text-warning" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Start with Basics</h6>
+                            <small class="text-muted">Focus on the most commonly used shortcuts first</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-clock text-success" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Set Reminders</h6>
+                            <small class="text-muted">Practice shortcuts during your daily Teams usage</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="{{ url_for('landing') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+                {% if session.user_name %}
+                <a href="{{ url_for('quiz') }}" class="btn btn-teams">
+                    <i class="fas fa-play"></i> Take Quiz Now
+                </a>
+                {% else %}
+                <a href="{{ url_for('landing') }}" class="btn btn-teams">
+                    <i class="fas fa-user"></i> Enter Name to Quiz
+                </a>
+                {% endif %}
+                <a href="{{ url_for('show_leaderboard') }}" class="btn btn-outline-warning">
+                    <i class="fas fa-trophy"></i> View Leaderboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Search functionality
+document.getElementById('shortcutSearch').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const shortcutCards = document.querySelectorAll('.shortcut-card');
+    const noResults = document.getElementById('noResults');
+    let visibleCount = 0;
+
+    shortcutCards.forEach(card => {
+        const description = card.getAttribute('data-description');
+        const shortcut = card.getAttribute('data-shortcut');
+        
+        if (description.includes(searchTerm) || shortcut.includes(searchTerm)) {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Show/hide no results message
+    if (visibleCount === 0 && searchTerm !== '') {
+        noResults.style.display = 'block';
+    } else {
+        noResults.style.display = 'none';
+    }
+});
+
+// Add hover effects
+document.querySelectorAll('.shortcut-card .card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-3px)';
+        this.style.transition = 'transform 0.2s ease';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+    });
+});
+</script>
+{% endblock %}

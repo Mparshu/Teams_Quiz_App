@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Microsoft Teams Quiz{% endblock %}
+
+{% block header %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h4 class="mb-0">
+                    <i class="fas fa-trophy"></i> Top Scores
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                {% if scores and scores|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Player</th>
+                                <th scope="col">Score</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in scores %}
+                            <tr class="{% if loop.index == 1 %}table-warning{% elif loop.index == 2 %}table-info{% elif loop.index == 3 %}table-light{% endif %}">
+                                <th scope="row">
+                                    {% if loop.index == 1 %}
+                                        🥇
+                                    {% elif loop.index == 2 %}
+                                        🥈
+                                    {% elif loop.index == 3 %}
+                                        🥉
+                                    {% else %}
+                                        {{ loop.index }}
+                                    {% endif %}
+                                </th>
+                                <td>
+                                    <span class="avatar-circle">{{ entry.name[0]|upper }}</span>
+                                    {{ entry.name }}
+                                </td>
+                                <td>
+                                    <span class="fw-bold">{{ entry.score }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ entry.date }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Stats -->
+                <div class="row text-center mt-4">
+                    <div class="col-md-4">
+                        <div class="stat-card p-3">
+                            <h5 class="mb-1 text-success">
+                                {{ scores[0].score if scores else 0 }}
+                            </h5>
+                            <small class="text-muted">Highest Score</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card p-3">
+                            <h5 class="mb-1">{{ scores|length }}</h5>
+                            <small class="text-muted">Players</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card p-3">
+                            <h5 class="mb-1">
+                                {% set avg = (scores|map(attribute='score')|sum / scores|length) if scores|length > 0 else 0 %}
+                                {{ avg|round(1) }}
+                            </h5>
+                            <small class="text-muted">Average Score</small>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info text-center mb-0">
+                    <i class="fas fa-info-circle"></i> No scores yet. Be the first to take the quiz!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Navigation Buttons -->
+        <div class="text-center mt-4">
+            <a href="{{ url_for('quiz') }}" class="btn btn-teams me-2">
+                <i class="fas fa-play"></i> Take Quiz Again
+            </a>
+            <a href="{{ url_for('landing') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+.stat-card {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+}
+.table-warning {
+    background: #fffbe6 !important;
+}
+.table-info {
+    background: #e6f7ff !important;
+}
+.table-light {
+    background: #f8f9fa !important;
+}
+</style>
+{% endblock %}
+        
+        

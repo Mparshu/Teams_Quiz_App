@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Microsoft Teams Quiz{% endblock %}
+
+{% block header %}Welcome to Teams Quiz{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        {% if not session.user_name %}
+        <!-- Name Input Section -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body text-center p-4">
+                <h3 class="card-title text-primary mb-3">
+                    <i class="fas fa-user"></i> Let's Get Started!
+                </h3>
+                <p class="lead mb-4">Enter your name to begin your Microsoft Teams learning journey</p>
+                
+                <form method="POST" action="{{ url_for('set_name') }}" class="needs-validation" novalidate>
+                    <div class="input-group input-group-lg mb-3">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" class="form-control" name="name" placeholder="Enter your name" required>
+                        <div class="invalid-feedback">
+                            Please enter your name.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-teams btn-lg">
+                        <i class="fas fa-play"></i> Start Learning
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <!-- Welcome Back Section -->
+        <div class="text-center mb-4">
+            <h2 class="text-success mb-3">
+                <i class="fas fa-check-circle"></i> Ready to Go!
+            </h2>
+            <p class="lead">What would you like to do today?</p>
+        </div>
+
+        <!-- Action Cards -->
+        <div class="row g-4">
+            <!-- Study Shortcuts Card -->
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm hover-card">
+                    <div class="card-body text-center p-4">
+                        <div class="text-primary mb-3" style="font-size: 3rem;">
+                            <i class="fas fa-keyboard"></i>
+                        </div>
+                        <h4 class="card-title">Study Shortcuts</h4>
+                        <p class="card-text">Review all Microsoft Teams keyboard shortcuts before taking the quiz.</p>
+                        <a href="{{ url_for('shortcuts') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-book-open"></i> View Shortcuts
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Take Quiz Card -->
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm hover-card">
+                    <div class="card-body text-center p-4">
+                        <div class="text-success mb-3" style="font-size: 3rem;">
+                            <i class="fas fa-quiz"></i>
+                        </div>
+                        <h4 class="card-title">Take Quiz</h4>
+                        <p class="card-text">Test your knowledge with 10 multiple-choice questions.</p>
+                        <a href="{{ url_for('quiz') }}" class="btn btn-teams btn-lg">
+                            <i class="fas fa-play"></i> Start Quiz
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Options -->
+        <div class="row g-4 mt-2">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <h5 class="card-title mb-3">More Options</h5>
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <a href="{{ url_for('show_leaderboard') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-trophy"></i> View Leaderboard
+                            </a>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changeNameModal">
+                                <i class="fas fa-edit"></i> Change Name
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Feature Highlights -->
+        <div class="row g-3 mt-4">
+            <div class="col-md-4 text-center">
+                <div class="p-3">
+                    <i class="fas fa-clock text-primary" style="font-size: 2rem;"></i>
+                    <h6 class="mt-2">Quick & Easy</h6>
+                    <small class="text-muted">10 questions, takes just 5 minutes</small>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="p-3">
+                    <i class="fas fa-chart-line text-success" style="font-size: 2rem;"></i>
+                    <h6 class="mt-2">Track Progress</h6>
+                    <small class="text-muted">See your scores and improve</small>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="p-3">
+                    <i class="fas fa-users text-warning" style="font-size: 2rem;"></i>
+                    <h6 class="mt-2">Compete</h6>
+                    <small class="text-muted">Compare with other users</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Name Modal -->
+{% if session.user_name %}
+<div class="modal fade" id="changeNameModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Your Name</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('set_name') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newName" class="form-label">Enter new name:</label>
+                        <input type="text" class="form-control" id="newName" name="name" value="{{ session.user_name }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-teams">Update Name</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

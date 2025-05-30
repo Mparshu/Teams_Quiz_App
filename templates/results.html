@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Results - Microsoft Teams Quiz{% endblock %}
+
+{% block header %}Quiz Complete!{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Results Card -->
+        <div class="card border-0 shadow-lg">
+            {% if score >= 8 %}
+            <div class="card-header bg-success text-white text-center py-5">
+                <div class="celebration-icon mb-3">
+                    <i class="fas fa-trophy" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="mb-2">Excellent Work!</h2>
+                <p class="mb-0 fs-5">You're a Teams shortcut expert!</p>
+            </div>
+            {% elif score >= 6 %}
+            <div class="card-header bg-primary text-white text-center py-5">
+                <div class="celebration-icon mb-3">
+                    <i class="fas fa-medal" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="mb-2">Good Job!</h2>
+                <p class="mb-0 fs-5">You know your shortcuts well!</p>
+            </div>
+            {% elif score >= 4 %}
+            <div class="card-header bg-warning text-dark text-center py-5">
+                <div class="celebration-icon mb-3">
+                    <i class="fas fa-thumbs-up" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="mb-2">Not Bad!</h2>
+                <p class="mb-0 fs-5">Room for improvement - keep studying!</p>
+            </div>
+            {% else %}
+            <div class="card-header bg-info text-white text-center py-5">
+                <div class="celebration-icon mb-3">
+                    <i class="fas fa-book-open" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="mb-2">Keep Learning!</h2>
+                <p class="mb-0 fs-5">Practice makes perfect!</p>
+            </div>
+            {% endif %}
+            
+            <div class="card-body p-5">
+                <!-- Score Display -->
+                <div class="text-center mb-5">
+                    <div class="score-circle mx-auto mb-4">
+                        <div class="score-number">
+                            {% if score is defined %}
+                                <span class="display-1 fw-bold">{{ score }}</span>
+                            {% else %}
+                                <span class="display-1 fw-bold">0</span>
+                            {% endif %}
+                            <span class="fs-3 text-muted">/{{ total }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Message -->
+                    <div class="performance-message">
+                        {% if score == total %}
+                        <h4 class="text-success">Perfect Score! 🎉</h4>
+                        <p class="text-muted">You answered all questions correctly!</p>
+                        {% elif score >= 8 %}
+                        <h4 class="text-success">Outstanding Performance!</h4>
+                        <p class="text-muted">You've mastered Microsoft Teams shortcuts!</p>
+                        {% elif score >= 6 %}
+                        <h4 class="text-primary">Good Performance!</h4>
+                        <p class="text-muted">You have a solid understanding of Teams shortcuts.</p>
+                        {% elif score >= 4 %}
+                        <h4 class="text-warning">Room for Improvement</h4>
+                        <p class="text-muted">Consider reviewing the shortcuts and trying again.</p>
+                        {% else %}
+                        <h4 class="text-info">Learning Opportunity</h4>
+                        <p class="text-muted">Study the shortcuts more and retake the quiz!</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Detailed Stats -->
+                <div class="row text-center mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card p-3 bg-success bg-opacity-10 rounded">
+                            <h4 class="text-success mb-1">{{ score }}</h4>
+                            <small class="text-muted">Correct</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card p-3 bg-danger bg-opacity-10 rounded">
+                            <h4 class="text-danger mb-1">{{ total - score }}</h4>
+                            <small class="text-muted">Incorrect</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card p-3 bg-primary bg-opacity-10 rounded">
+                            <h4 class="text-primary mb-1">{{ ((score / total) * 100) | round | int }}%</h4>
+                            <small class="text-muted">Accuracy</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card p-3 bg-info bg-opacity-10 rounded">
+                            {% if score >= 8 %}
+                                <h4 class="text-info mb-1">A</h4>
+                            {% elif score >= 6 %}
+                                <h4 class="text-info mb-1">B</h4>
+                            {% elif score >= 4 %}
+                                <h4 class="text-info mb-1">C</h4>
+                            {% else %}
+                                <h4 class="text-info mb-1">D</h4>
+                            {% endif %}
+                            <small class="text-muted">Grade</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('restart_quiz') }}" class="btn btn-teams btn-lg w-100">
+                                <i class="fas fa-redo"></i> Retake Quiz
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('feedback') }}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-comment"></i> Give Feedback
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-4">
+                            <a href="{{ url_for('show_leaderboard') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-trophy"></i> Leaderboard
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('shortcuts') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-book"></i> Study More
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('landing') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-home"></i> Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Improvement Suggestions -->
+        {% if score < 8 %}
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb text-warning"></i> Suggestions for Improvement
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="fas fa-book-reader text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div>
+                                <h6>Study the Shortcuts</h6>
+                                <small class="text-muted">Review all available shortcuts before retaking the quiz.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="fas fa-hands text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <div>
+                                <h6>Practice Daily</h6>
+                                <small class="text-muted">Use Teams shortcuts in your daily work to build muscle memory.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Share Results (Optional) -->
+        <div class="text-center mt-4">
+            <button onclick="shareResults()" class="btn btn-outline-primary">
+                <i class="fas fa-share-alt"></i> Share Results
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .score-circle {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        position: relative;
+        animation: scaleIn 0.8s ease-out;
+    }
+    
+    .score-number {
+        text-align: center;
+        line-height: 1;
+    }
+    
+    .celebration-icon {
+        animation: boun
+</style>
+
+<script>
+function shareResults() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Microsoft Teams Quiz Results',
+            text: `I scored ${score}/${total} on the Microsoft Teams Quiz!`,
+            url: window.location.href
+        });
+    } else {
+        // Fallback for browsers that don't support Web Share API
+        const text = `I scored ${score}/${total} on the Microsoft Teams Quiz!`;
+        navigator.clipboard.writeText(text);
+        alert('Results copied to clipboard!');
+    }
+}
+</script>
+{% endblock %}

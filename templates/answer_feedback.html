@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Answer Feedback - Microsoft Teams Quiz{% endblock %}
+
+{% block header %}Answer Results{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Progress Bar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-primary">Question {{ question_num }} of {{ total_questions }}</span>
+                    <span class="badge bg-success fs-6">Score: {{ score }}/{{ question_num }}</span>
+                </div>
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar bg-primary" role="progressbar" 
+                         style="width: {{ (question_num / total_questions) * 100 }}%"
+                         aria-valuenow="{{ question_num }}" aria-valuemin="0" aria-valuemax="{{ total_questions }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Card -->
+        <div class="card border-0 shadow-lg">
+            {% if is_correct %}
+            <div class="card-header bg-success text-white text-center py-4">
+                <div class="feedback-icon mb-2">
+                    <i class="fas fa-check-circle" style="font-size: 3rem;"></i>
+                </div>
+                <h3 class="mb-0">Correct!</h3>
+            </div>
+            {% else %}
+            <div class="card-header bg-danger text-white text-center py-4">
+                <div class="feedback-icon mb-2">
+                    <i class="fas fa-times-circle" style="font-size: 3rem;"></i>
+                </div>
+                <h3 class="mb-0">Incorrect</h3>
+            </div>
+            {% endif %}
+            
+            <div class="card-body p-5 text-center">
+                {% if is_correct %}
+                <div class="alert alert-success border-0 mb-4">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-trophy"></i> Well Done!
+                    </h5>
+                    <p class="mb-0">You got it right! Keep up the great work.</p>
+                </div>
+                {% else %}
+                <div class="alert alert-danger border-0 mb-4">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-info-circle"></i> Learning Opportunity
+                    </h5>
+                    <p class="mb-2">Don't worry, that's how we learn!</p>
+                    <hr>
+                    <p class="mb-0">
+                        <strong>The correct answer is:</strong><br>
+                        <span class="badge bg-success fs-6 mt-2">{{ correct_answer }}</span>
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Current Score Display -->
+                <div class="score-display mb-4">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded">
+                                <h4 class="text-primary mb-1">{{ score }}</h4>
+                                <small class="text-muted">Correct</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded">
+                                <h4 class="text-warning mb-1">{{ question_num - score }}</h4>
+                                <small class="text-muted">Incorrect</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded">
+                                <h4 class="text-info mb-1">{{ total_questions - question_num }}</h4>
+                                <small class="text-muted">Remaining</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Continue Button -->
+                {% if question_num < total_questions %}
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('next_question') }}" class="btn btn-teams btn-lg" id="continueBtn">
+                        <i class="fas fa-arrow-right"></i> Next Question
+                    </a>
+                    <small class="text-muted mt-2">
+                        <i class="fas fa-keyboard"></i> Press Space or Enter to continue
+                    </small>
+                </div>
+                {% else %}
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('results') }}" class="btn btn-teams btn-lg" id="resultsBtn">
+                        <i class="fas fa-flag-checkered"></i> View Final Results
+                    </a>
+                    <small class="text-muted mt-2">
+                        <i class="fas fa-trophy"></i> Quiz Complete! See your final score
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="text-center mt-4">
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="{{ url_for('shortcuts') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-book"></i> Review Shortcuts
+                </a>
+                {% if question_num >= total_questions %}
+                <a href="{{ url_for('show_leaderboard') }}" class="btn btn-outline-warning">
+                    <i class="fas fa-trophy"></i> Leaderboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .feedback-icon {
+        animation: bounceIn 0.6s ease-out;
+    }
+    
+    @keyframes bounceIn {
+        0% { 
+            transform: scale(0.3); 
+            opacity: 0; 
+        }
+        50% { 
+            transform: scale(1.1); 
+            opacity: 0.8; 
+        }
+        100% { 
+            transform: scale(1); 
+            opacity: 1; 
+        }
+    }
+    
+    .score-display {
+        animation: slideUp 0.5s ease-out 0.3s both;
+    }
+    
+    @keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .card {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script>
+let autoAdvanceTimer;
+
+// Auto-advance to next question after 3 seconds (if not last question)
+function startAutoAdvance() {
+    {% if question_num < total_questions %}
+    autoAdvanceTimer = setTimeout(() => {
+        const btn = document.getElementById('continueBtn');
+        if (btn) btn.click();
+    }, 3000);
+    {% endif %}
+}
+
+// Clear timer when leaving page
+window.addEventListener('beforeunload', () => {
+    if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+});
+
+// Start auto-advance when page loads
+window.addEventListener('load', startAutoAdvance);
+
+// Keyboard navigation (Space/Enter to continue)
+document.addEventListener('keydown', function(e) {
+    if (e.code === 'Space' || e.key === 'Enter') {
+        e.preventDefault();
+        {% if question_num < total_questions %}
+        const btn = document.getElementById('continueBtn');
+        if (btn) btn.click();
+        {% else %}
+        const btn = document.getElementById('resultsBtn');
+        if (btn) btn.click();
+        {% endif %}
+    }
+});
+
+// Focus on continue/results button for better UX
+window.addEventListener('load', function() {
+    {% if question_num < total_questions %}
+    const btn = document.getElementById('continueBtn');
+    if (btn) btn.focus();
+    {% else %}
+    const btn = document.getElementById('resultsBtn');
+    if (btn) btn.focus();
+    {% endif %}
+});
+
+// Add sound effect simulation (visual feedback)
+{% if is_correct %}
+window.addEventListener('load', function() {
+    const celebration = document.querySelector('.feedback-icon i');
+    if (celebration) {
+        setTimeout(() => {
+            celebration.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                celebration.style.transform = 'scale(1)';
+            }, 200);
+        }, 600);
+    }
+});
+{% endif %}
+
+// Smooth transitions
+document.querySelectorAll('a.btn').forEach(btn => {
+    btn.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+    });
+    
+    btn.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+    });
+});
+</script>
+{% endblock %}
