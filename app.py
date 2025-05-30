@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import random
 from datetime import datetime
+import json
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-in-production'
@@ -113,9 +115,45 @@ QUIZ_QUESTIONS = [
     }
 ]
 
-# In-memory storage for leaderboard and feedback
-leaderboard = []
-feedback_list = []
+# Add these constants at the top of your file
+LEADERBOARD_FILE = 'leaderboard.json'
+FEEDBACK_FILE = 'feedback.json'
+
+# Function to load leaderboard data
+def load_leaderboard():
+    if os.path.exists(LEADERBOARD_FILE):
+        try:
+            with open(LEADERBOARD_FILE, 'r') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            return []
+    return []
+
+# Function to save leaderboard data
+def save_leaderboard(leaderboard_data):
+    with open(LEADERBOARD_FILE, 'w') as f:
+        json.dump(leaderboard_data, f, indent=4)
+
+# Function to load feedback data
+def load_feedback():
+    if os.path.exists(FEEDBACK_FILE):
+        try:
+            with open(FEEDBACK_FILE, 'r') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            return []
+    return []
+
+# Function to save feedback data
+def save_feedback(feedback_data):
+    with open(FEEDBACK_FILE, 'w') as f:
+        json.dump(feedback_data, f, indent=4)
+
+# Initialize leaderboard from file
+leaderboard = load_leaderboard()
+
+# Initialize feedback from file
+feedback_list = load_feedback()
 
 @app.route('/')
 def landing():
@@ -197,21 +235,30 @@ def results():
     
     # Add to leaderboard if quiz completed
     if 'score' in session and session.get('question_number', 0) >= 10:
-        leaderboard.append({
+        new_entry = {
             'name': session['user_name'],
             'score': session['score'],
             'date': datetime.now().strftime('%Y-%m-%d %H:%M')
-        })
+        }
+        
+        # Add new entry to leaderboard
+        leaderboard.append(new_entry)
         # Sort leaderboard by score (descending)
         leaderboard.sort(key=lambda x: x['score'], reverse=True)
+        # Keep only top 100 scores
+        leaderboard[:] = leaderboard[:100]
+        # Save to file
+        save_leaderboard(leaderboard)
     
     score = session.get('score', 0)
     return render_template('results.html', score=score, total=10)
 
 @app.route('/leaderboard')
 def show_leaderboard():
+    # Load fresh data from file
+    leaderboard_data = load_leaderboard()
     # Show top 10 scores
-    top_scores = leaderboard[:10]
+    top_scores = leaderboard_data[:10]
     return render_template('leaderboard.html', scores=top_scores)
 
 @app.route('/feedback')
@@ -229,12 +276,14 @@ def submit_feedback():
     rating = request.form.get('rating', '')
     
     if feedback_text:
-        feedback_list.append({
+        feedback_entry = {
             'name': session['user_name'],
             'feedback': feedback_text,
             'rating': rating,
             'date': datetime.now().strftime('%Y-%m-%d %H:%M')
-        })
+        }
+        feedback_list.append(feedback_entry)
+        save_feedback(feedback_list)
         flash('Thank you for your feedback!')
     
     return redirect(url_for('results'))
@@ -250,6 +299,11 @@ def restart_quiz():
         session.pop('correct_answer', None)
     
     return redirect(url_for('quiz'))
+
+@app.route('/view_feedback')
+def view_feedback():
+    feedback_data = load_feedback()
+    return render_template('view_feedback.html', feedback=feedback_data)
 
 if __name__ == '__main__':
     app.run(threaded=True)
